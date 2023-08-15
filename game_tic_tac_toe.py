@@ -3,9 +3,12 @@ from PIL import Image, ImageTk
 
 #import libraries
 class Game():
-    def __init__(self):
+    def __init__(self,player_one,player_two):
         self.stop_game=False
 
+        self.player_one=player_one
+        self.player_two=player_two
+        
         self.click=dict()
 
         self.top_left_clicked=False
@@ -34,14 +37,14 @@ class Game():
         self.right_diagnol=list()
         
         self.spaces_filled=0
-        self.turn="x"
+        self.turn=self.player_one
     
     def end(self,root):
             for widgets in root.winfo_children():
                 widgets.destroy()
+            self.cont.set(1)
             print("In here")
             
-
     def set_var(self,var):
             if var=="top_left":
                 self.top_left_clicked=self.turn
@@ -125,7 +128,8 @@ class Game():
         display_label=tkinter.Label(root,text="Tic-Tac-Toe-Game",font=("Times 18"))
         display_label.place(relx=0.5,rely=0.1,anchor="center")
 
-        turn_label=tkinter.Label(root,text="Player x it is your turn",font=("Times 14"))
+        turn_label=tkinter.Label(root,font=("Times 14"))
+        turn_label["text"]="Player "+str(self.player_one.player_number) +" it is your turn"
         turn_label.place(relx=0.5,rely=0.2,anchor="center") 
         
       
@@ -135,16 +139,16 @@ class Game():
             elif self.stop_game:
                 print("Game Over")
             else:
-                if self.turn=="x":
+                if self.turn==self.player_one:
                     #print("turn x")
                     img=Image.open("tic-tac-toe-cross.png")
                     image=img.resize((90,90))
                     img_to_add=ImageTk.PhotoImage(image)
                     btn["image"]=img_to_add
                     btn.img=img_to_add
-                    turn_label["text"]="Player o it is your turn"
+                    turn_label["text"]="Player "+str(self.player_two.player_number) +" it is your turn"
                     self.set_var(var)
-                    self.turn="o"
+                    self.turn=self.player_two
                     #print("turn in if ",turn)
                     self.click[btn]="x"
                     #print(self.click)
@@ -155,9 +159,9 @@ class Game():
                     img_to_add=ImageTk.PhotoImage(image)
                     btn["image"]=img_to_add
                     btn.img=img_to_add
-                    turn_label["text"]="Player x it is your turn"
+                    turn_label["text"]="Player "+str(self.player_one.player_number)+" it is your turn"
                     self.set_var(var)
-                    self.turn="x"
+                    self.turn=self.player_one
                     self.click[btn]="o"
                     #print("Alderedy clicked")
                     #print(self.click)
@@ -165,16 +169,36 @@ class Game():
                 self.spaces_filled=self.spaces_filled+1
                 ans=self.round_check()
                 if ans[0]==True:
-                    turn_label["text"]="Player "+ans[1]+ " has won the game"
+                    if self.turn==self.player_one:
+                        self.player_two.score=self.player_two.score+1
+                        turn_label["text"]="Player "+str(self.player_two.player_number)+ " has won the game"
+                    else:
+                        self.player_one.score=self.player_one.score+1
+                        turn_label["text"]="Player "+str(self.player_one.player_number)+ " has won the game"
+
                     root.config(bg="cyan")
+                    def on_close():
+                        self.cont.set(1)
+                        root.destroy()   
+                    root.protocol("WM_DELETE_WINDOW", on_close)
                     next_button=tkinter.Button(root,text="Next",font=("Times 18"),command=lambda:self.end(root))
                     next_button.place(relx=0.5,rely=0.8,anchor="center")
+                    self.cont=tkinter.IntVar()
+                    root.wait_variable(self.cont)
+                    self.done.set(1)
                     print("Game Over eee")
                 elif ans[0]=="tie":
-                    turn_label["text"]="Player o and x have tied the game"
+                    turn_label["text"]="Player 1 and 2 have tied the game"
                     root.config(bg="cyan")
+                    def on_close():
+                        self.cont.set(1)
+                        root.destroy()   
+                    root.protocol("WM_DELETE_WINDOW", on_close)
                     next_button=tkinter.Button(root,text="Next",font=("Times 18"),command=lambda: self.end(root))
                     next_button.place(relx=0.5,rely=0.8,anchor="center")
+                    self.cont=tkinter.IntVar()
+                    root.wait_variable(self.cont)
+                    self.done.set(1)
                     print("Game Over ffff")
                     
         def add_blank_image(btn):
@@ -239,5 +263,12 @@ class Game():
         self.click[middle_right_square]=self.middle_right_clicked
         self.click[bottom_right_square]=self.bottom_right_clicked
         
+        self.done=tkinter.IntVar()
+        root.wait_variable(self.done)
+
+        return "smth"
+
+
         root.mainloop()
+        
 
